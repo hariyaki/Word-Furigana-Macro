@@ -1,12 +1,25 @@
+'----------------------------------------------------------------------------
+' FuriganaMaker Macro
+' Created by: Harrison Lisk
+' Date: February 2025
+'
+' Description:
+'   Automates the process of adding furigana (ruby text) to Kanji in Word
+'   documents, un-linking fields and then scanning from the end to the start.
+'
+' License: MIT
+'
+'----------------------------------------------------------------------------
 Option Explicit
 
-' If Word doesn稚 have this constant, define it manually:
+' Defining Manual Constant
 Const wdDialogFormatPhoneticGuide As Long = 986
 
 '---------------------------------------------------------------------------------
 ' SINGLE PUBLIC MACRO:
 '   1) Unlinks all fields (so no "EQ \*..." expansions),
 '   2) Applies furigana to consecutive Kanji runs from doc end ? doc start.
+'       2.1) "Kanji run" refers to one or more Kanji written consecutively.
 '
 ' This is the ONLY macro that appears in the Macros menu.
 '---------------------------------------------------------------------------------
@@ -20,12 +33,12 @@ Public Sub FuriganaMaker()
     ' 2) Ensure doc is recognized as Japanese
     doc.Content.LanguageIDFarEast = wdJapanese
     
-    ' 3) Call our private sub to scan backwards for Kanji
+    ' 3) Call our loop to scan backwards for Kanji
     BackwardLoop doc
 End Sub
 
 '---------------------------------------------------------------------------------
-' PRIVATE SUB: Scans doc from end to start, finds consecutive Kanji runs,
+' BackwardLoop: Scans doc from end to start, finds consecutive Kanji runs,
 ' then applies the Phonetic Guide dialog to each run via hacky SendKeys.
 '
 ' Marked Private, so it won't appear in the macro list.
@@ -77,7 +90,7 @@ Private Sub BackwardLoop(ByVal doc As Document)
 End Sub
 
 '---------------------------------------------------------------------------------
-' PRIVATE SUB: Applies Word's Phonetic Guide to [startPos..endPos].
+' ApplyPhoneticGuideToRange: Applies Word's Phonetic Guide to [startPos..endPos].
 ' Uses SendKeys "~" to auto-press "OK" in the Phonetic Guide dialog.
 '---------------------------------------------------------------------------------
 Private Sub ApplyPhoneticGuideToRange(startPos As Long, endPos As Long)
@@ -85,6 +98,7 @@ Private Sub ApplyPhoneticGuideToRange(startPos As Long, endPos As Long)
     
     Dim rng As Range
     Dim WAIT_SECONDS As Single
+    ' Adjust Wait Time Here
     WAIT_SECONDS = 0.5
     
     Set rng = ActiveDocument.Range(startPos, endPos + 1)
@@ -104,7 +118,7 @@ Private Sub ApplyPhoneticGuideToRange(startPos As Long, endPos As Long)
 End Sub
 
 '---------------------------------------------------------------------------------
-' PRIVATE FUNCTION: Checks if 'ch' is a single character in standard/Ext-A Kanji,
+' IsKanjiChar: Checks if 'ch' is a single character in standard/Ext-A Kanji,
 ' handling negative AscW values.
 '---------------------------------------------------------------------------------
 Private Function IsKanjiChar(ch As String) As Boolean
@@ -127,7 +141,7 @@ Private Function IsKanjiChar(ch As String) As Boolean
 End Function
 
 '---------------------------------------------------------------------------------
-' PRIVATE SUB: Simple wait to let Word open/apply the dialog
+' WaitSeconds: Simple wait to let Word open/apply the dialog
 '---------------------------------------------------------------------------------
 Private Sub WaitSeconds(ByVal Seconds As Single)
     Dim t As Date
